@@ -1,0 +1,576 @@
+{%load static%}
+
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth" ;>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- INTEGRARE TAILWIND CSS IN STYLESHEET-UL CSS -->
+  <link rel="stylesheet" href={% static 'styles.css' %}>
+  <!-- END -->
+  <script src="https://kit.fontawesome.com/2deb7a22af.js" crossorigin="anonymous"></script>
+  <script src="{% static 'app.js' %}" defer></script>
+  <title> MYKEY - All your passwords in one place!</title>
+  <style>
+    #alert {
+      animation: hideAnimation 0s ease-in 2s;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes hideAnimation {
+      to {
+        visibility: hidden;
+        width: 0;
+        height: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<!-- HEADER-UL SI BARA DE NAVIGATIE A PAGINII -->
+  <header class="text-black body-font mb-16">
+    <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+      <a href="{% url 'home' %}" class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+        <svg class="w-12 h-12 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+          </path>
+        </svg>
+        <span class="ml-3 text-5xl text-black tracking-wider">MY</span> <span
+          class="text-5xl text-orange-600 font-bold tracking-wider">KEY</span>
+      </a>
+      <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center font-semibold">
+        <a href="{% url 'home' %}" class="mr-6 text-2xl hover:text-orange-600 hover:text-md">Home</a>
+        {% if request.user.is_anonymous %}
+        <a href="#learn_more" class="mr-6 text-2xl hover:text-orange-600">Learn</a>
+        <a href="javascript: displayForm('login-form');">
+          <button
+            class="transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 bg-orange-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded mr-4">
+            Log In
+          </button>
+        </a>
+        <a href="javascript: displayForm('signup-form');">
+          <button
+            class="transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 bg-orange-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded mr-4">
+            Sign Up
+          </button>
+        </a>
+        {% else %}
+        <a href="{% url 'passwords' %}"
+          class="mr-6 text-2xl hover:text-orange-600 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110">Account</a>
+        <a href="javascript: displayForm('addpassword-form');" class="mr-6 text-2xl hover:text-orange-600">Add</a>
+        <a href="javascript:logOut();">
+          <button
+            class="transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 bg-orange-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded mr-4">
+            Log Out
+          </button>
+        </a>
+        <form hidden="true" action="." method="POST">
+          {% csrf_token %}
+          <input type="submit" id="form-logout" name="logout">
+        </form>
+        {% endif %}
+
+      </nav>
+    </div>
+  </header>
+<!-- SFARSITUL HEADERULUI -->
+
+
+
+<!-- ALERTA REFERITOARE LA CONECTAREA REUSITA/NEREUSITA SAU PAROLA/USERNAME ASEMANATOARE/DEJA UTILIZATE DE ALTCINEVA -->
+  {% if messages %}
+  <div id="alert"
+    class="h-modal fixed top-0 right-0 left-0 z-50 items-center justify-center overflow-y-auto overflow-x-hidden md:inset-0 md:h-full"
+    aria-hidden="true">
+    <div class="relative h-full w-full max-w-md p-4 md:h-auto">
+      <div class="relative rounded-lg bg-orange-600">
+        <div class="flex justify-end p-2">
+        </div>
+        {%for message in messages%}
+        <div class="p-6 pt-0 text-center">
+          {%if message.tags == "error" %}
+          <svg class="text-black-400 mx-auto mb-4 h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          {%else%}
+          <svg class="text-black-400 mx-auto mb-4 h-12 w-12" fill="currentColor" viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"></path>
+          </svg>
+          {% endif %}
+          <h3 class="mb-5 text-xl font-semibold text-black">{{message}}</h3>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+<!--SFARISTUL ALERTEI-->
+
+<!--CASUTA DE CONFIRMARE A CODULUI PRIMIT PRIN MAIL PENTRU LOGARE-->
+  {% if code %}
+  <div class="wrapper w-full h-full justify-center items-center bg-gray-400 bg-opacity-75 fixed inset-0 z-30">
+    <div class="modal flex items-center justify-center" id="signup-form">
+      <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
+        <div class="flex justify-end p-2">
+          <button id="close-button" type="button"
+            class="text-orange-600 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+            data-modal-toggle="login-modal">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+        <h3 class="text-2xl font-bold text-center mb-8">A code has been sent to your email</h3>
+        <form action="." role="form" method="POST">
+          {% csrf_token %}
+          <div class="mt-4">
+            <div>
+              <label class="block font-semibold" for="email">Enter the verification code<label>
+                  <input type="text" name="email-code" placeholder="Enter code"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div>
+              <input type="text" hidden="true" name="user" value="{{user.username}}">
+            </div>
+            <div class="mt-8 flex items-baseline justify-center">
+              <input type="submit" name="confirm-button" value="Confirm"
+                class="px-6 py-2 mt-4 text-white font-semibold bg-orange-600 rounded-lg hover:bg-black hover:text-orange-600">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+<!--SFARSITUL CASUTEI DE CONFIRMARE-->
+
+
+<!-- MODALE PENTRU PARTEA DE LOGIN SI SIGNUP -->
+  <div class="wrapper w-full h-full hidden justify-center items-center bg-gray-400 bg-opacity-75 fixed inset-0 z-30">
+
+<!-- MODALUL DE LOGIN -->
+    <div class="modal hidden items-center justify-center" id="login-form">
+      <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
+        <div class="flex justify-end p-2">
+          <button id="close-button" type="button"
+            class="text-orange-600 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+            data-modal-toggle="login-modal">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+        <h3 class="text-2xl font-bold text-center mb-8">Login to our platform</h3>
+        <form action="." role="form" method="POST">
+          {% csrf_token %}
+          <div class="mt-4">
+            <div>
+              <label class="block font-semibold" for="email">Your username<label>
+                  <input type="text" name="username" placeholder="username"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-4">
+              <label class="block font-semibold">Your Password<label>
+                  <input type="password" name="password" placeholder="••••••••"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-8 flex items-baseline justify-center">
+              <input type="submit" name="login-form" value="Log In"
+                class="px-6 py-2 mt-4 text-white font-semibold bg-orange-600 rounded-lg hover:bg-black hover:text-orange-600">
+            </div>
+          </div>
+          <div class="text-center mt-10 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Not registered? <a href="javascript: switchBetween('signup-form');"
+              class="text-orange-600 hover:underline dark:text-blue-500">Create account</a>
+          </div>
+        </form>
+      </div>
+    </div>
+<!--SFARSIT MODAL DE LOGIN-->
+
+<!-- MODALUL DE SIGNUP -->
+    <div class="modal hidden flex items-center justify-center" id="signup-form">
+      <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
+        <div class="flex justify-end p-2">
+          <button id="close-button" type="button"
+            class="text-orange-600 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+            data-modal-toggle="login-modal">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+        <h3 class="text-2xl font-bold text-center mb-8">Sign Up to our platform</h3>
+        <form action="." role="form" method="POST">
+          {% csrf_token %}
+          <div class="mt-4">
+            <div>
+              <label class="block font-semibold" for="email">Your username<label>
+                  <input type="text" name="username" placeholder="username"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-4">
+              <label class="block font-semibold">Your Email<label>
+                  <input type="email" name="email" placeholder="name@company.com"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-4">
+              <label class="block font-semibold">Your Password<label>
+                  <input type="password" name="password" placeholder="••••••••"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-4">
+              <label class="block font-semibold">Confirm Your Password<label>
+                  <input type="password" name="password2" placeholder="••••••••"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-8 flex items-baseline justify-center">
+              <input type="submit" name="signup-form" value="Sign Up"
+                class="px-6 py-2 mt-4 text-white font-semibold bg-orange-600 rounded-lg hover:bg-black hover:text-orange-600">
+            </div>
+          </div>
+          <div class="text-center mt-10 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Already have an account?? <a href="javascript: switchBetween('login-form');"
+              class="text-orange-600 hover:underline dark:text-blue-500">Log in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+<!--SFARSIT MODAL DE SIGN-UP-->
+
+<!--MODAL DE ADAUGARE PAROLE-->
+    <div class="modal hidden items-center justify-center" id="addpassword-form">
+      <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
+        <div class="flex justify-end p-2">
+          <button id="close-button" type="button"
+            class="text-orange-600 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+            data-modal-toggle="login-modal">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+        <h3 class="text-2xl font-bold text-center mb-8">Enter your credentials</h3>
+        <form action="." role="form " method="POST">
+          {% csrf_token %}
+          <div class="mt-4">
+            <div>
+              <label class="block font-semibold text-xl" for="email">URL of the website</label>
+              <input type="text" name="url" placeholder="url"
+                class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div>
+              <label class="block font-semibold text-xl" for="email">Your Email</label>
+              <input type="text" name="email" placeholder="name@company.com"
+                class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+
+            <div class="mt-4">
+              <label class="block font-semibold text-xl">Your Password <i class="far fa-eye text-orange-600 ml-2"
+                  id="togglePassword"></i><label>
+                  <input id="id_password" type="password" name="password" placeholder="••••••••"
+                    class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+            </div>
+            <div class="mt-8 flex items-baseline justify-center">
+              <input type="submit" name="add-password" value="Done"
+                class="px-6 py-2 mt-4 text-white font-semibold bg-orange-600 rounded-lg hover:bg-black hover:text-orange-600">
+            </div>
+          </div>
+      </div>
+      </form>
+    </div>
+<!--SFARSIT MODAL DE ADAUAGARE-->
+<!-- MODALUL DE VIZUALIZARE AL PAROLEI SALVATE -->
+    <div class="modal hidden items-center justify-center" id="password-form">
+      <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
+        <div class="flex justify-end p-2">
+          <button id="close-button" type="button"
+            class="text-orange-600 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+            data-modal-toggle="login-modal">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+        <h3 class="text-2xl font-bold text-center mb-8">Your credentials</h3>
+        <div class="mt-4">
+          <label class="block font-semibold text-xl" for="email">Email</label>
+          <input type="text" name="email" placeholder="name@company.com"
+            class="w-10/12 px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"><svg
+            class="copy w-8 h-8 text-orange-600 inline-block cursor-pointer ml-5 mb-2" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+            </path>
+          </svg>
+        </div>
+
+        <div class="mt-4">
+          <label class="block font-semibold text-xl">Your Password <label>
+              <input type="password" name="password" placeholder="••••••••"
+                class="w-10/12 px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600">
+              <svg class="copy w-8 h-8 text-orange-600 text-ceter cursor-pointer inline-block ml-4 mb-2" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+              </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+<!--SFARISTUL MODALULUI DE VIZUALIZARE-->
+
+  </div>
+<!--SFARISTUL SECTIUNII CU MODALE-->
+
+
+
+
+<!-- SECTIUNEA DE INCEPUT -->
+  <section class="text-gray-600 body-font">
+    <div class="container mx-auto flex px-5 py-24 md:flex-row flex-col items-center">
+      <div
+        class="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
+        <h1 class="text-6xl font-bold text-black mb-8">All your passwords in one place!</h1>
+        <p class=" text-2xl mb-8 leading-relaxed">Are you tired of forgetting your passwords all the time? <b
+            class="text-orange-600 text-3xl">WE GOT YOU!</b> Using our platform you can gather all your credentials in
+          one place. Your life has never been easier! Click the button below to see what we can offer you</p>
+        <div class="flex justify-center">
+          <button
+            class="inline-flex text-white bg-orange-600 border-0 py-3 px-6 focus:outline-none hover:bg-black hover:text-orange-600 rounded text-lg font-semibold"><a
+              href="#benefits">SEE THE BENEFITS</a></button>
+        </div>
+      </div>
+      <div class="lg:max-w-lg lg:w-full md:w-1/2 w-5/6">
+        <img class="object-cover object-center rounded" alt="hero" src="{% static 'header-image.png' %}">
+      </div>
+    </div>
+  </section>
+<!-- SFARSIT SECTIUNII DE INCEPUT-->
+
+
+  <span class="block h-1 w-6/12 m-auto rounded bg-orange-600"></span>
+
+
+<!-- SECTIUNEA DE BENEFICII ALE APLICATIEI -->
+  <section id="benefits" class="text-gray-600 body-font mt-10 mb-10 font-semibold">
+    <div class="container px-5 py-24 mx-auto flex flex-wrap">
+      <div class="flex relative pt-10 pb-20 sm:items-center md:w-2/3 mx-auto">
+        <div class="h-full w-6 absolute inset-0 flex items-center justify-center">
+          <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+        </div>
+        <div
+          class="flex-shrink-0 w-6 h-6 rounded-full mt-10 sm:mt-0 inline-flex items-center justify-center bg-orange-600 text-white relative z-10 title-font font-medium text-sm">
+          1</div>
+        <div class="flex-grow md:pl-8 pl-6 flex sm:items-center items-start flex-col sm:flex-row">
+          <div
+            class="flex-shrink-0 w-24 h-24 bg-gray-100 text-orange-600 rounded-full inline-flex items-center justify-center">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+              </path>
+            </svg>
+          </div>
+          <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+            <h2 class="font-medium title-font text-xl tracking-wider text-gray-900 mb-1 ">EFFICIENT AND
+              SECURE</h2>
+            <p class="leading-relaxed">All your passwords are safe and no one besides you can access them.</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex relative pb-20 sm:items-center md:w-2/3 mx-auto">
+        <div class="h-full w-6 absolute inset-0 flex items-center justify-center">
+          <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+        </div>
+        <div
+          class="flex-shrink-0 w-6 h-6 rounded-full mt-10 sm:mt-0 inline-flex items-center justify-center bg-orange-600 text-white relative z-10 title-font font-medium text-sm">
+          2</div>
+        <div class="flex-grow md:pl-8 pl-6 flex sm:items-center items-start flex-col sm:flex-row">
+          <div
+            class="flex-shrink-0 w-24 h-24 bg-gray-100 text-orange-600 rounded-full inline-flex items-center justify-center">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+              </path>
+            </svg>
+          </div>
+          <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+            <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">UNLIMITED SPACE FOR YOUR PASSWORDS</h2>
+            <p class="leading-relaxed">You can add as many passwords as you want!</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex relative pb-20 sm:items-center md:w-2/3 mx-auto">
+        <div class="h-full w-6 absolute inset-0 flex items-center justify-center">
+          <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+        </div>
+        <div
+          class="flex-shrink-0 w-6 h-6 rounded-full mt-10 sm:mt-0 inline-flex items-center justify-center bg-orange-500 text-white relative z-10 title-font font-medium text-sm">
+          3</div>
+        <div class="flex-grow md:pl-8 pl-6 flex sm:items-center items-start flex-col sm:flex-row">
+          <div
+            class="flex-shrink-0 w-24 h-24 bg-gray-100 text-orange-500 rounded-full inline-flex items-center justify-center">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+              </path>
+            </svg>
+          </div>
+          <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+            <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">EASY TO USE</h2>
+            <p class="leading-relaxed">You just log in and here you go! All your credentials in one place!</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex relative pb-10 sm:items-center md:w-2/3 mx-auto">
+        <div class="h-full w-6 absolute inset-0 flex items-center justify-center">
+          <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+        </div>
+        <div
+          class="flex-shrink-0 w-6 h-6 rounded-full mt-10 sm:mt-0 inline-flex items-center justify-center bg-orange-500 text-white relative z-10 title-font font-medium text-sm">
+          4</div>
+        <div class="flex-grow md:pl-8 pl-6 flex sm:items-center items-start flex-col sm:flex-row">
+          <div
+            class="flex-shrink-0 w-24 h-24 bg-gray-100 text-orange-500 rounded-full inline-flex items-center justify-center">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+              </path>
+            </svg>
+          </div>
+          <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+            <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">YOUR INFO, YOUR CHOICE</h2>
+            <p class="leading-relaxed">You can edit and delete your information at any time.</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex relative pb-10 sm:items-center md:w-2/3 mx-auto">
+        <div class="h-full w-6 absolute inset-0 flex items-center justify-center">
+          <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+        </div>
+        <div
+          class="flex-shrink-0 w-6 h-6 rounded-full mt-10 sm:mt-0 inline-flex items-center justify-center bg-orange-500 text-white relative z-10 title-font font-medium text-sm">
+          5</div>
+        <div class="flex-grow md:pl-8 pl-6 flex sm:items-center items-start flex-col sm:flex-row">
+          <div
+            class="flex-shrink-0 w-24 h-24 bg-gray-100 text-orange-500 rounded-full inline-flex items-center justify-center">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+            <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">OPTIMIZED FOR ANY PLATFORM</h2>
+            <p class="leading-relaxed">You can view your passwords anytime, anywhere from any device.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<!-- SFARSITUL SECTIUNII DE BENEFICII ALE APLICATIEI-->
+
+
+  <span class="block h-1 w-6/12 m-auto rounded bg-orange-600"></span>
+
+<!-- SECTIUNEA DE DESCRIERE -->
+  <section id="learn_more" class="text-gray-600 body-font">
+    <div class="container px-5 py-24 mx-auto">
+      <div class="xl:w-1/2 lg:w-3/4 w-full mx-auto text-center">
+        <svg class="inline-block w-20 h-20 text-orange-600 mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+        </svg>
+        <p class="leading-relaxed text-lg">Edison bulb retro cloud bread echo park, helvetica stumptown taiyaki
+          taxidermy 90's cronut +1 kinfolk. Single-origin coffee ennui shaman taiyaki vape DIY tote bag drinking vinegar
+          cronut adaptogen squid fanny pack vaporware. Man bun next level coloring book skateboard four loko knausgaard.
+          Kitsch keffiyeh master cleanse direct trade indigo juice before they sold out gentrify plaid gastropub
+          normcore XOXO 90's pickled cindigo jean shorts. Slow-carb next level shoindigoitch ethical authentic, yr
+          scenester sriracha forage franzen organic drinking vinegar.</p>
+        <span class="inline-block h-1 w-10 rounded bg-orange-600 mt-8 mb-6"></span>
+        <h2 class="text-gray-900 font-medium title-font tracking-widest text-lg">BERCARU ROBERT</h2>
+        <p class="text-gray-500">Front-End Developer</p>
+      </div>
+    </div>
+  </section>
+<!-- SFARSITUL SECTIUNII DE DESCRIERE -->
+
+
+
+
+<!-- FOOTER UL PAGINII -->
+  <footer class="text-gray-600 body-font mt-20">
+    <div class="container px-5 py-8 mx-auto flex items-center sm:flex-row flex-col">
+      <a class="flex title-font font-medium items-center md:justify-start justify-center text-gray-900">
+        <svg class="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+          </path>
+        </svg>
+        <span class="ml-3 text-3xl font-bold text-orange-600 tracking-wider">MY KEY</span>
+      </a>
+      <p class="text-lg text-black sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4 font-semibold">
+        © 2022 Bercaru Robert
+      </p>
+      <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
+        <a href="https://bit.ly/3Ok8CyP" target="_blank" class="text-gray-500">
+          <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            class="w-8 h-8 hover:text-orange-600" viewBox="0 0 24 24">
+            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
+          </svg>
+        </a>
+        <a href="https://bit.ly/3OdwPXH" target="_blank" class="ml-3 text-gray-500">
+          <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            class="w-8 h-8 hover:text-orange-600" viewBox="0 0 24 24">
+            <path
+              d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+            </path>
+          </svg>
+        </a>
+        <a href="https://bit.ly/3KN8ohz" target="_blank" class="ml-3 text-gray-500">
+          <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            class="w-8 h-8 hover:text-orange-600" viewBox="0 0 24 24">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
+          </svg>
+        </a>
+        <a href="https://bit.ly/3xBkTZG" target="_blank" class="ml-3 text-gray-500">
+          <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0"
+            class="w-8 h-8 hover:text-orange-600" viewBox="0 0 24 24">
+            <path stroke="none"
+              d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+            <circle cx="4" cy="4" r="2" stroke="none"></circle>
+          </svg>
+        </a>
+      </span>
+    </div>
+  </footer>
+  <!-- SFARSITUL FOOTERULUI -->
+</body>
+</html>
