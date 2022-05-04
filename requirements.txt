@@ -20,5 +20,9 @@ urllib3==1.26.6
 webencodings==0.5.1
 django-heroku==0.3.1
 gunicorn==20.1.0
+Flask==2.1.2
+
+
+
 
 
