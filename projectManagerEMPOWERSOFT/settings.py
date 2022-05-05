@@ -79,11 +79,14 @@ WSGI_APPLICATION = 'projectManagerEMPOWERSOFT.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dck0aeg84eo47q',
+        'HOST' : 'ec2-34-201-95-176.compute-1.amazonaws.com',
+        'PORT' : 5432,
+        'USER': 'kmliviqthtthgv',
+        'PASSWORD': '927ac572f15375c368854ee0361ddbfaf42b85dc66276346910f77ea7a305ced'   
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
