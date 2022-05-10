@@ -64,7 +64,7 @@
             <ul
               class="flex flex-col items-center justify-center gap-6 lg:gap-0 mt-6 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium">
               <li>
-                <a href="{% url 'home' %}" class="lg:mr-6 text-2xl hover:text-orange-600 hover:text-md">Home</a>
+                <a href="{% url 'home' %}" class="lg:mr-6 text-2xl font-bold hover:text-orange-600 hover:text-md">Home</a>
               </li>
               {% if request.user.is_anonymous %}
               <li>
@@ -86,11 +86,11 @@
               {% else %}
               <li>
                 <a href="{% url 'passwords' %}"
-                  class="lg:mr-6 text-2xl hover:text-orange-600 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110">Account</a>
+                  class="lg:mr-6 text-2xl hover:text-orange-600 transition font-bold ease-in-out delay-150 hover:-translate-y-1 hover:scale-110">Account</a>
               </li>
               <li>
                 <a href="javascript: displayForm('addpassword-form');"
-                  class="lg:mr-6 text-2xl hover:text-orange-600">Add</a>
+                  class="lg:mr-6 text-2xl font-bold hover:text-orange-600">Add</a>
               </li>
               <li>
                 <a href="javascript:logOut();">
