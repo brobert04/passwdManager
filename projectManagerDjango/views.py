@@ -11,6 +11,7 @@ from flask import request_tearing_down
 from cryptography.fernet import Fernet
 from mechanize import Browser
 import favicon
+import mechanize
 from .models import UserInformation
 
 # VARIABILE GLOBALE
@@ -122,11 +123,19 @@ def home(request):
             encryptedPassword = fernet.encrypt(accountPassword.encode())
 
             # PRELUAREA TITLULUI SI A ICONITEI WEBSITEULUI
-            browser.open(url)
-            pageTitle = browser.title()
-
-            icons = favicon.get(url)
-            icon = icons[0].url
+            try:
+                browser.open(url)
+                pageTitle = browser.title()
+                
+            except(mechanize.HTTPError, mechanize.URLError):
+                msg = "The URL you have entered is not valid!"
+                messages.error(request, msg)
+                return HttpResponseRedirect(request.path)
+            try:
+                icon = favicon.get(url)[0].url
+            except:
+                icon = "Icon"
+            
             db_password = UserInformation.objects.create(
                 user=request.user,
                 name=pageTitle,
@@ -176,7 +185,7 @@ def passwords(request):
             msg = "Your password was saved!Click on 'View' to see your passwords!"
             messages.success(request, msg)
             return redirect(request.path)
-
+        
     # TRIMITEREA DATELOR CATRE PAGINA 'VIEW', IMPLICIT CREAREA CARDURILOR CU INFORMATII
     userPasswords = UserInformation.objects.all().filter(user=request.user)
     for passwd in userPasswords:
@@ -189,10 +198,5 @@ def passwords(request):
 
 # USERUL DECIDE SA STEARGA INFORMATILLE
 def deleteItem(request, id):
-    item = UserInformation.objects.get(id=id)
-    item.delete()
+    UserInformation.objects.get(id=id).delete()
     return redirect('passwords')
-
-def deleteUser(request, pk):
-    
-    return redirect('home')
