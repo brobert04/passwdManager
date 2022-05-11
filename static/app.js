@@ -53,7 +53,9 @@ function logOut(){
   }
 
   function deleteCard(){
-    document.getElementById('delete-btn').click();
+    let card = document.querySelector('.del-btn{{password.id}}');
+    console.log(card);
+    card.click();
  }  
 
 // CASUTA DE ADAUGARE PAROLA - VIZUALIZARE PAROLA

@@ -186,6 +186,11 @@ def passwords(request):
             messages.success(request, msg)
             return redirect(request.path)
         
+        # elif "delete" in request.POST:
+        #     to_delete = request.POST.get("password-id")
+        #     UserInformation.objects.filter(id=to_delete).delete()
+        #     return redirect('passwords')
+        
     # TRIMITEREA DATELOR CATRE PAGINA 'VIEW', IMPLICIT CREAREA CARDURILOR CU INFORMATII
     userPasswords = UserInformation.objects.all().filter(user=request.user)
     for passwd in userPasswords:
@@ -198,5 +203,8 @@ def passwords(request):
 
 # USERUL DECIDE SA STEARGA INFORMATILLE
 def deleteItem(request, id):
-    UserInformation.objects.get(id=id).delete()
+    item = UserInformation.objects.get(pk=id)
+    item.delete()
     return redirect('passwords')
+
+# {% url 'delete-item' password.id %}
