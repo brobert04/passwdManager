@@ -48,15 +48,23 @@ Spre deosebire de alte aplicații similare, MYKEY vine cu design modern și prie
 Tehnologii si Limbaje de Programare folosite:
 
 •Partea de Frontend:
--HTML5
--Vanilla Javascript
+<ul>
+ <li>HTML5</li>
+ <li>Vanilla Javascript</li>
+</ul>
 
 • Partea de Backend:
--Python
+<ul>
+  <li>Python</li>
+</ul>
 
 •Framework-uri folosite:
--Django
--TailwindCSS
+<ul>
+ <li>Django</li>
+ <li>TailwindCSS</li>
+</ul>
 
 •Baza de date:
--PostgreSQL
+<ul>
+ <li>PostgreSQL</li>
+</ul>
