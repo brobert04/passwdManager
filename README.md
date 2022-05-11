@@ -1,5 +1,6 @@
 # MYKEY - ALL YOUR PASSWORDS IN ONE PLACE!
-<p>Acest proiect a fost realizat pentru Olimpiada de Inovare și Creație 2022
+<p>Acest proiect a fost realizat pentru Olimpiada de Inovare și Creație 2022</p>
+<p>Documentația completă o găsiți in DOCUMENTATIE.DOCX</p>
 
 
 ## Cuprins
@@ -31,11 +32,11 @@ Spre deosebire de alte aplicații similare, MYKEY vine cu design modern și prie
 
 ### Poze
 
-![](readme/screenshot1.jpg)
-![](readme/screenshot2.jpg)
-![](readme/screenshot3.jpg)
-![](readme/screenshot4.jpg)
-![](readme/screenshot5.jpg)
+![](readme/screenshot1.png)
+![](readme/screenshot2.png)
+![](readme/screenshot3.png)
+![](readme/screenshot4.png)
+![](readme/screenshot5.png)
 
 
 ### Link-uri
