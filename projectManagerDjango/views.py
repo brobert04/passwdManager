@@ -185,18 +185,14 @@ def passwords(request):
             msg = "Your password was saved!Click on 'View' to see your passwords!"
             messages.success(request, msg)
             return redirect(request.path)
-        
-        # elif "delete" in request.POST:
-        #     to_delete = request.POST.get("password-id")
-        #     UserInformation.objects.filter(id=to_delete).delete()
-        #     return redirect('passwords')
+
         
     # TRIMITEREA DATELOR CATRE PAGINA 'VIEW', IMPLICIT CREAREA CARDURILOR CU INFORMATII
     userPasswords = UserInformation.objects.all().filter(user=request.user)
     for passwd in userPasswords:
         passwd.email = fernet.decrypt(passwd.email.encode()).decode()
         passwd.password = fernet.decrypt(passwd.password.encode()).decode()
-
+    
     return render(request, "password.html", {
         "passwords": userPasswords
     })
@@ -206,5 +202,3 @@ def deleteItem(request, id):
     item = UserInformation.objects.get(pk=id)
     item.delete()
     return redirect('passwords')
-
-# {% url 'delete-item' password.id %}
